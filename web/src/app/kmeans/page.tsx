@@ -38,7 +38,7 @@ export default function KMeansPage() {
       <section className="mt-20 border-t border-[var(--hairline)] pt-8">
         <p className="text-[13px] text-[var(--ink-secondary)]">
           The from-scratch Python/numpy version of this — with inertia curves across many random seeds — lives in{" "}
-          <code className="font-mono text-[var(--ink-primary)]">notebooks/kmeans/kmeans.ipynb</code>.
+          <code className="font-mono text-[var(--ink-primary)]">notebooks/unsupervised/kmeans/kmeans.ipynb</code>.
         </p>
       </section>
     </div>

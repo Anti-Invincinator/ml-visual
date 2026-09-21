@@ -39,7 +39,7 @@ export default function BackpropagationPage() {
           The from-scratch Python/numpy version of this — vectorized forward/backward pass, decision-boundary
           snapshots across training — lives in{" "}
           <code className="font-mono text-[var(--ink-primary)]">
-            notebooks/backpropagation/backpropagation.ipynb
+            notebooks/deep-learning/backpropagation/backpropagation.ipynb
           </code>
           .
         </p>

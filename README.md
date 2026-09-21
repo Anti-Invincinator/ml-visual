@@ -35,30 +35,36 @@ Every algorithm lives in **two places**:
 ```
 ml-visual/
   notebooks/
-    distance-metrics/
-    gradient-descent/
-    backpropagation/
-    svm/
-    kmeans/
-    decision-trees/
+    foundations/
+      distance-metrics/
+      gradient-descent/
+    supervised/
+      svm/
+      decision-trees/
+    unsupervised/
+      kmeans/
+    deep-learning/
+      backpropagation/
+    transformers/
     ...
   web/
     src/
       algorithms/        # from-scratch TS implementations, one folder per algorithm
-      app/                # Next.js routes, one page per algorithm/category
+      app/                # Next.js routes, one page per algorithm
       components/         # shared UI (nav, layout, design system primitives)
+      lib/algorithms.ts   # category taxonomy shown on the home page
 ```
 
 ## 📊 Algorithms
 
 | Algorithm | Category | Notebook | Web |
 |---|---|:---:|:---:|
-| Distance metrics (Euclidean, Manhattan, Chebyshev, Minkowski, Cosine) | Distance & search | ✅ | ✅ |
-| Gradient descent (batch, momentum, noisy/SGD-style) | Optimization | ✅ | ✅ |
-| Backpropagation (from-scratch MLP on XOR) | Neural networks | ✅ | ✅ |
-| Support vector machines (linear vs. RBF kernel) | Classical ML — supervised | ✅ | ✅ |
-| K-means clustering (random vs. k-means++ init) | Classical ML — unsupervised | ✅ | ✅ |
-| Decision trees (CART, Gini impurity) | Classical ML — supervised | ✅ | ✅ |
+| Distance metrics (Euclidean, Manhattan, Chebyshev, Minkowski, Cosine) | Foundations | ✅ | ✅ |
+| Gradient descent (batch, momentum, noisy/SGD-style) | Foundations | ✅ | ✅ |
+| Support vector machines (linear vs. RBF kernel) | Supervised | ✅ | ✅ |
+| Decision trees (CART, Gini impurity) | Supervised | ✅ | ✅ |
+| K-means clustering (random vs. k-means++ init) | Unsupervised | ✅ | ✅ |
+| Backpropagation (from-scratch MLP on XOR) | Deep learning | ✅ | ✅ |
 
 *...and more soon.*
 
@@ -68,7 +74,8 @@ This is a running project, not a finished one — next up, roughly in order:
 
 - **Supervised**: logistic regression, naive Bayes, random forests / boosting
 - **Unsupervised**: PCA, hierarchical clustering, DBSCAN, autoencoders
-- **Deep learning**: CNNs, RNNs/LSTMs, attention & transformers
+- **Deep learning**: CNNs, RNNs/LSTMs
+- **Transformers**: self-attention, the transformer architecture
 - Open to suggestions — [open an issue](../../issues) if there's something you'd want to see explained this way.
 
 ## ⚙️ Running it

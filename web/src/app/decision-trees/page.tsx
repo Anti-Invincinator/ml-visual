@@ -39,7 +39,7 @@ export default function DecisionTreesPage() {
         <p className="text-[13px] text-[var(--ink-secondary)]">
           The from-scratch Python/numpy version of this — same tree, same dataset, same overfitting curve — lives in{" "}
           <code className="font-mono text-[var(--ink-primary)]">
-            notebooks/decision-trees/decision_trees.ipynb
+            notebooks/supervised/decision-trees/decision_trees.ipynb
           </code>
           .
         </p>

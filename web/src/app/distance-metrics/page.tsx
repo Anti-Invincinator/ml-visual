@@ -50,7 +50,7 @@ export default function DistanceMetricsPage() {
       <section className="mt-20 border-t border-[var(--hairline)] pt-8">
         <p className="text-[13px] text-[var(--ink-secondary)]">
           The from-scratch Python/numpy version of this — with the KNN decision-boundary comparison — lives in{" "}
-          <code className="font-mono text-[var(--ink-primary)]">notebooks/distance-metrics/distance_metrics.ipynb</code>.
+          <code className="font-mono text-[var(--ink-primary)]">notebooks/foundations/distance-metrics/distance_metrics.ipynb</code>.
         </p>
       </section>
     </div>

@@ -40,7 +40,7 @@ export default function SVMPage() {
       <section className="mt-20 border-t border-[var(--hairline)] pt-8">
         <p className="text-[13px] text-[var(--ink-secondary)]">
           The from-scratch Python/numpy version of this — with the full gradient derivation — lives in{" "}
-          <code className="font-mono text-[var(--ink-primary)]">notebooks/svm/svm.ipynb</code>.
+          <code className="font-mono text-[var(--ink-primary)]">notebooks/supervised/svm/svm.ipynb</code>.
         </p>
       </section>
     </div>

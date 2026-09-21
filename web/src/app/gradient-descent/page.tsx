@@ -40,7 +40,7 @@ export default function GradientDescentPage() {
           The from-scratch Python/numpy version of this — with the same three optimizers and a loss-vs-iteration
           comparison — lives in{" "}
           <code className="font-mono text-[var(--ink-primary)]">
-            notebooks/gradient-descent/gradient_descent.ipynb
+            notebooks/foundations/gradient-descent/gradient_descent.ipynb
           </code>
           .
         </p>
