@@ -19,7 +19,7 @@ Machine learning, deep learning, and neural network algorithms — implemented f
 
 ## 🎓 Origin
 
-This started as coursework for my Master's — the notebooks were how I actually learned each algorithm, by refusing to import it from a library until I could derive and code the math myself. It's grown past the syllabus since: this repo is the ongoing, running version, and it'll keep growing — supervised, unsupervised, and whatever else I end up wanting to understand from the ground up.
+This started as coursework for my Master's. It's grown into an ongoing project since — a place to visualize algorithms, simple as that — and it'll keep growing: supervised, unsupervised, and whatever else comes next.
 
 ## 🎯 What this is
 
@@ -59,6 +59,8 @@ ml-visual/
 | Support vector machines (linear vs. RBF kernel) | Classical ML — supervised | ✅ | ✅ |
 | K-means clustering (random vs. k-means++ init) | Classical ML — unsupervised | ✅ | ✅ |
 | Decision trees (CART, Gini impurity) | Classical ML — supervised | ✅ | ✅ |
+
+*...and more soon.*
 
 ### 🛣️ Roadmap
 
