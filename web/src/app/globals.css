@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces — true black, not off-black */
+  --page: #050505;
+  --surface: #0d0d0f;
+  --surface-raised: #151517;
+
+  /* Ink — cool grays, not warm-neutral */
+  --ink-primary: #f2f2f0;
+  --ink-secondary: #9a9fa6;
+  --ink-muted: #63676e;
+
+  /* Structure */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --hairline: #201f22;
+
+  /* Brand accent — signal blue, with violet as a secondary highlight */
+  --accent: #3987e5;
+  --accent-secondary: #9085e9;
+  --accent-ink: #061018;
+
+  /* Status colors — reserved for state (live/good, hot/expensive), never series identity */
+  --status-good: #0ca30c;
+  --status-critical: #d03b3b;
+
+  /* Metric identity colors (dataviz categorical slots) */
+  --metric-euclidean: #3987e5;
+  --metric-manhattan: #d95926;
+  --metric-chebyshev: #199e70;
+  --metric-minkowski: #c98500;
+  --metric-cosine: #9085e9;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink-primary: var(--ink-primary);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
