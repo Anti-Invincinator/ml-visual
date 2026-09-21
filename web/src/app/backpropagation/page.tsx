@@ -23,6 +23,11 @@ export default function BackpropagationPage() {
         below learns XOR — the textbook example a single-layer model can&apos;t solve — with every gradient derived
         by hand and every weight update computed from scratch in TypeScript.
       </p>
+      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
+        In practice: this is the exact same algorithm behind your phone unlocking with your face, a spam filter
+        that keeps adapting to new tricks, and every chatbot you&apos;ve talked to — all of it is backprop, just
+        with millions or billions of parameters instead of thirteen.
+      </p>
 
       <section className="mt-16">
         <h2 className="text-lg font-medium text-[var(--ink-primary)]">Learning XOR</h2>

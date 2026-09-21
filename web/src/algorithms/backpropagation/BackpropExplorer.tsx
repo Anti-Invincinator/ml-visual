@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Formula } from "@/components/formula";
 import {
   forward,
   initNetwork,
@@ -249,6 +250,7 @@ export default function BackpropExplorer() {
             <span className="font-mono text-[var(--ink-primary)]">{TOTAL_EPOCHS}</span> epochs of full-batch
             gradient descent, weights updated by hand-derived backprop.
           </p>
+          <Formula tex="h = \sigma(XW_1 + b_1), \quad \hat{y} = \sigma(hW_2 + b_2)" block />
           <div>
             <div className="flex items-baseline justify-between">
               <label htmlFor="bp-lr" className="font-mono text-[13px] text-[var(--ink-secondary)]">
@@ -315,6 +317,9 @@ export default function BackpropExplorer() {
           or fully converged. Node fill is the activation value; edge thickness is{" "}
           <span className="font-mono">|weight|</span>.
         </p>
+        <div className="mt-3">
+          <Formula tex="\delta_1 = (\delta_2 W_2^T) \odot h(1-h)" />
+        </div>
         <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-[auto_1fr]">
           <NetworkDiagram params={currentParams} input={[x1, x2]} />
           <div className="flex flex-col justify-center gap-4">

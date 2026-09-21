@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { Formula } from "@/components/formula";
 import {
   chebyshevDistance,
   cosineDistance,
@@ -88,10 +89,30 @@ export default function PointComparison() {
   const angleB = Math.atan2(-(bPx.y - originPx.y), bPx.x - originPx.x);
 
   const readouts = [
-    { label: "Euclidean", value: euclideanDistance(a, b), color: "var(--metric-euclidean)" },
-    { label: "Manhattan", value: manhattanDistance(a, b), color: "var(--metric-manhattan)" },
-    { label: "Chebyshev", value: chebyshevDistance(a, b), color: "var(--metric-chebyshev)" },
-    { label: "Cosine distance", value: cosineDistance(a, b), color: "var(--metric-cosine)" },
+    {
+      label: "Euclidean",
+      value: euclideanDistance(a, b),
+      color: "var(--metric-euclidean)",
+      tex: "\\sqrt{\\Delta x^2 + \\Delta y^2}",
+    },
+    {
+      label: "Manhattan",
+      value: manhattanDistance(a, b),
+      color: "var(--metric-manhattan)",
+      tex: "|\\Delta x| + |\\Delta y|",
+    },
+    {
+      label: "Chebyshev",
+      value: chebyshevDistance(a, b),
+      color: "var(--metric-chebyshev)",
+      tex: "\\max(|\\Delta x|, |\\Delta y|)",
+    },
+    {
+      label: "Cosine distance",
+      value: cosineDistance(a, b),
+      color: "var(--metric-cosine)",
+      tex: "1 - \\cos\\theta",
+    },
   ];
 
   return (
@@ -181,6 +202,9 @@ export default function PointComparison() {
               <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
                 <span className="h-2 w-2 rounded-full" style={{ background: r.color }} />
                 {r.label}
+                <span className="text-[var(--ink-muted)]">
+                  <Formula tex={r.tex} />
+                </span>
               </dt>
               <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">
                 {r.value.toFixed(2)}

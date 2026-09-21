@@ -34,6 +34,48 @@ export const categories: AlgorithmCategory[] = [
     ],
   },
   {
+    name: "Search & optimization",
+    description: "Finding good solutions without a gradient to follow.",
+    algorithms: [
+      {
+        slug: "genetic-algorithms",
+        name: "Genetic algorithms",
+        description: "A population evolving past local minima that trap plain gradient descent.",
+        status: "live",
+      },
+      {
+        slug: "simulated-annealing",
+        name: "Simulated annealing",
+        description: "Accepting worse moves early, on purpose, cooling down over time.",
+        status: "live",
+      },
+      {
+        slug: "particle-swarm",
+        name: "Particle swarm optimization",
+        description: "A swarm pulled toward its own best find and the group's best find.",
+        status: "soon",
+      },
+      {
+        slug: "graph-search",
+        name: "BFS vs. DFS",
+        description: "Queue vs. stack, racing through the same maze.",
+        status: "live",
+      },
+      {
+        slug: "a-star",
+        name: "A* search",
+        description: "Informed search — a heuristic steering the frontier toward the goal.",
+        status: "soon",
+      },
+      {
+        slug: "dijkstra",
+        name: "Dijkstra's algorithm",
+        description: "Shortest paths on a graph where edges cost different amounts.",
+        status: "soon",
+      },
+    ],
+  },
+  {
     name: "Supervised",
     description: "Learning from labeled examples.",
     algorithms: [

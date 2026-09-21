@@ -25,6 +25,11 @@ export default function SVMPage() {
         Both models below are trained from scratch via subgradient descent directly on the dual coefficients — no
         QP solver, no SMO.
       </p>
+      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
+        In practice: early spam filters and a lot of tumor-benign-vs-malignant medical classifiers ran on SVMs —
+        clean margins and a principled &ldquo;how confident is this&rdquo; number matter a lot more than raw
+        accuracy when a false negative is a missed cancer diagnosis.
+      </p>
 
       <section className="mt-16">
         <h2 className="text-lg font-medium text-[var(--ink-primary)]">Linear vs. RBF, same data</h2>

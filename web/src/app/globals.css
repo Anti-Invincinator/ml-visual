@@ -67,3 +67,8 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+.katex {
+  color: inherit;
+  font-size: 1em;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Formula } from "@/components/formula";
 import {
   decisionValueAt,
   hingeLoss,
@@ -98,6 +99,7 @@ function buildTrajectory(K: number[][], y: number[]): Trajectory {
 
 function KernelPanel({
   title,
+  tex,
   data,
   y,
   kernel,
@@ -107,6 +109,7 @@ function KernelPanel({
   step,
 }: {
   title: string;
+  tex: string;
   data: LabeledPoint[];
   y: number[];
   kernel: Kernel;
@@ -168,6 +171,9 @@ function KernelPanel({
           {correct}/{data.length} correct · {svCount} support vectors
         </span>
       </div>
+      <div className="mt-1 text-[var(--ink-muted)]">
+        <Formula tex={tex} />
+      </div>
       <canvas
         ref={canvasRef}
         width={GRID}
@@ -214,9 +220,11 @@ export default function SVMExplorer() {
         Two rings, not linearly separable — no straight line can split them. Both models train on the exact same
         points, same regularization, same learning rate. Only the kernel changes.
       </p>
+      <Formula tex="f(x) = \sum_j \alpha_j y_j K(x_j, x) + b" block />
       <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
         <KernelPanel
           title="linear kernel"
+          tex="K(a,b) = a \cdot b"
           data={data}
           y={y}
           kernel={linearKernel}
@@ -227,6 +235,7 @@ export default function SVMExplorer() {
         />
         <KernelPanel
           title="RBF kernel"
+          tex="K(a,b) = \exp(-\gamma \lVert a-b \rVert^2)"
           data={data}
           y={y}
           kernel={rbfKernel}

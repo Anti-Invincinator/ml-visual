@@ -24,6 +24,11 @@ export default function GradientDescentPage() {
         visibly zig-zag and makes momentum&apos;s advantage obvious. All three optimizers below run entirely in the
         browser, computed from scratch in TypeScript.
       </p>
+      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
+        In practice: every large language model you&apos;ve used was trained by exactly this update rule, just
+        applied to a loss surface with billions of dimensions instead of two — momentum (or a close cousin of it,
+        Adam) is the default in almost every real training run, for precisely the zig-zag reason shown below.
+      </p>
 
       <section className="mt-16">
         <h2 className="text-lg font-medium text-[var(--ink-primary)]">Race the optimizers</h2>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Formula } from "@/components/formula";
 import { minkowskiUnitBall, type Vec2 } from "./engine";
 
 const SIZE = 360;
@@ -63,6 +64,8 @@ export default function UnitBallExplorer() {
           <span className="font-mono">p=1</span>), the square is Chebyshev (<span className="font-mono">p=∞</span>).
           The solid curve is live.
         </p>
+
+        <Formula tex="d(x, y) = \left(\sum_i |x_i - y_i|^p\right)^{1/p}" block />
 
         <div>
           <div className="flex items-baseline justify-between">

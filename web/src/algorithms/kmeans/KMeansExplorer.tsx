@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Formula } from "@/components/formula";
 import {
   buildTrajectory,
   kmeansPlusPlusInit,
@@ -78,6 +79,9 @@ function Panel({
       <p className="mt-1 font-mono text-[11px] text-[var(--ink-muted)]">
         {converged ? `converged in ${trajectory.length - 1} iterations` : `iteration ${step}`}
       </p>
+      <div className="mt-1 text-[var(--ink-muted)]">
+        <Formula tex="c_k = \tfrac{1}{|S_k|} \sum_{x \in S_k} x" />
+      </div>
     </div>
   );
 }
@@ -115,6 +119,7 @@ export default function KMeansExplorer() {
         picks three data points at random and sometimes strands a centroid where it can&apos;t recover; k-means++
         spreads the initial picks out on purpose.
       </p>
+      <Formula tex="\text{inertia} = \sum_i \lVert x_i - c_{\,\text{assign}(i)} \rVert^2" block />
       <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
         <Panel title="random init" points={points} trajectory={randomTrajectory} step={step} />
         <Panel title="k-means++ init" points={points} trajectory={kppTrajectory} step={step} />

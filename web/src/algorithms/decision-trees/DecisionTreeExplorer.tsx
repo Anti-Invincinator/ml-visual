@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Formula } from "@/components/formula";
 import {
   accuracy,
   buildTree,
@@ -230,6 +231,7 @@ export default function DecisionTreeExplorer() {
             backprop. A tree solves it differently: greedy axis-aligned splits, each one picked to minimize Gini
             impurity in the two resulting groups.
           </p>
+          <Formula tex="\text{Gini}(S) = 1 - \sum_c p_c^2" block />
           <div>
             <div className="flex items-baseline justify-between">
               <label htmlFor="dt-depth" className="font-mono text-[13px] text-[var(--ink-secondary)]">

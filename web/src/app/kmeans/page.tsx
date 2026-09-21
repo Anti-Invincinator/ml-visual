@@ -23,6 +23,11 @@ export default function KMeansPage() {
         move each centroid to the mean of the points assigned to it. It always converges — but not always to the
         same place. Where the centroids start matters a lot.
       </p>
+      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
+        In practice: retailers use this to split customers into segments nobody predefined — &ldquo;bargain
+        hunters,&rdquo; &ldquo;weekend browsers&rdquo; — and it&apos;s the same idea behind crunching a 16-million-color
+        photo down to the 256 colors a GIF can actually hold, by clustering similar pixel colors together.
+      </p>
 
       <section className="mt-16">
         <h2 className="text-lg font-medium text-[var(--ink-primary)]">Initialization matters</h2>

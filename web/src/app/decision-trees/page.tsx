@@ -23,6 +23,11 @@ export default function DecisionTreesPage() {
         each question greedily to make the two resulting groups as pure as possible. No gradients, no iterative
         optimization: just recursive splitting, implemented from scratch below with Gini impurity as the criterion.
       </p>
+      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
+        In practice: a loan-approval flowchart (&ldquo;credit score above X? income above Y?&rdquo;) or a medical
+        triage checklist are both, functionally, someone hand-building the exact structure this notebook grows
+        automatically from data — which is also why trees are popular anywhere a human needs to audit the decision.
+      </p>
 
       <section className="mt-16">
         <h2 className="text-lg font-medium text-[var(--ink-primary)]">Depth is the whole knob</h2>

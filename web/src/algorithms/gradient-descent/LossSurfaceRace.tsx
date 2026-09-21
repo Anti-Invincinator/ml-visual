@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Formula } from "@/components/formula";
 import {
   batchStep,
   loss,
@@ -56,9 +57,19 @@ function heatmapImageData(): ImageData {
 }
 
 const OPTIMIZERS = [
-  { key: "batch", label: "Batch GD", color: "#3987e5" },
-  { key: "momentum", label: "Momentum", color: "#d95926" },
-  { key: "sgd", label: "Noisy / SGD-style", color: "#199e70" },
+  { key: "batch", label: "Batch GD", color: "#3987e5", tex: "w_{t+1} = w_t - \\eta \\nabla L(w_t)" },
+  {
+    key: "momentum",
+    label: "Momentum",
+    color: "#d95926",
+    tex: "v_{t+1} = \\beta v_t + \\nabla L(w_t),\\ w_{t+1} = w_t - \\eta v_{t+1}",
+  },
+  {
+    key: "sgd",
+    label: "Noisy / SGD-style",
+    color: "#199e70",
+    tex: "w_{t+1} = w_t - \\eta\\,(\\nabla L(w_t) + \\text{noise})",
+  },
 ] as const;
 
 function runPaths(start: Vec2, lr: number): Record<string, Vec2[]> {
@@ -205,6 +216,8 @@ export default function LossSurfaceRace() {
             live, computed from scratch on every step.
           </p>
 
+          <Formula tex="L(w_1, w_2) = \tfrac{1}{2}\left(a\,w_1^2 + b\,w_2^2\right)" block />
+
           <div>
             <div className="flex items-baseline justify-between">
               <label htmlFor="lr-slider" className="font-mono text-[13px] text-[var(--ink-secondary)]">
@@ -245,9 +258,14 @@ export default function LossSurfaceRace() {
                     i !== OPTIMIZERS.length - 1 ? "border-b border-[var(--hairline)]" : ""
                   }`}
                 >
-                  <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
-                    <span className="h-2 w-2 rounded-full" style={{ background: opt.color }} />
-                    {opt.label}
+                  <dt className="flex flex-col gap-1 text-[13px] text-[var(--ink-secondary)]">
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full" style={{ background: opt.color }} />
+                      {opt.label}
+                    </span>
+                    <span className="text-[var(--ink-muted)]">
+                      <Formula tex={opt.tex} />
+                    </span>
                   </dt>
                   <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">
                     {loss(current).toFixed(3)}
