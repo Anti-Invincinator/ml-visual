@@ -159,10 +159,10 @@ export default function SimulatedAnnealingExplorer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-[380px_1fr]">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[440px_1fr]">
         <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
         <div className="flex flex-col justify-center gap-5">
-          <p className="text-[13px] text-[var(--ink-secondary)]">
+          <p className="text-[15px] text-[var(--ink-secondary)]">
             Same start, same landscape. Gradient descent (blue) commits immediately and stops the moment it finds a
             downhill-only path. Simulated annealing (violet) sometimes accepts a worse move on purpose — those
             moves are marked in red — which is exactly what lets it walk back out of a bad basin while it&apos;s
@@ -171,33 +171,33 @@ export default function SimulatedAnnealingExplorer() {
           <Formula tex="P(\text{accept}) = \exp\!\left(-\dfrac{\Delta}{T}\right)" block />
           <dl className="border border-[var(--hairline)]">
             <div className="flex items-center justify-between border-b border-[var(--hairline)] px-4 py-3">
-              <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
+              <dt className="flex items-center gap-2 text-[15px] text-[var(--ink-secondary)]">
                 <span className="h-2 w-2 rounded-full" style={{ background: "#3987e5" }} />
                 gradient descent
               </dt>
-              <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{gdValue.toFixed(3)}</dd>
+              <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{gdValue.toFixed(3)}</dd>
             </div>
             <div className="flex items-center justify-between border-b border-[var(--hairline)] px-4 py-3">
-              <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
+              <dt className="flex items-center gap-2 text-[15px] text-[var(--ink-secondary)]">
                 <span className="h-2 w-2 rounded-full" style={{ background: "#9085e9" }} />
                 simulated annealing
               </dt>
-              <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{saValue.toFixed(3)}</dd>
+              <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{saValue.toFixed(3)}</dd>
             </div>
             <div className="flex items-center justify-between px-4 py-3">
-              <dt className="text-[13px] text-[var(--ink-secondary)]">temperature</dt>
-              <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">
+              <dt className="text-[15px] text-[var(--ink-secondary)]">temperature</dt>
+              <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">
                 {saCurrent.temperature.toFixed(3)}
               </dd>
             </div>
           </dl>
           <button
             onClick={reshuffle}
-            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[13px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
+            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[15px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
           >
             new seed
           </button>
-          <p className="font-mono text-[11px] text-[var(--ink-muted)]">
+          <p className="font-mono text-[13px] text-[var(--ink-muted)]">
             step {Math.min(step, SA_STEPS)} / {SA_STEPS} — lower is better, 0 is the true optimum
           </p>
         </div>

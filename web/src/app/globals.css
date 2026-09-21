@@ -18,14 +18,18 @@
   --border-strong: rgba(255, 255, 255, 0.16);
   --hairline: #201f22;
 
-  /* Brand accent — signal blue, with violet as a secondary highlight */
-  --accent: #3987e5;
-  --accent-secondary: #9085e9;
-  --accent-ink: #061018;
+  /* Brand accent — neon cyan, with electric violet as a secondary highlight.
+     Reserved for UI chrome (nav, headings, buttons, glow) — never used for
+     multi-series data encoding, which stays on the validated --metric-* set below. */
+  --accent: #00e5ff;
+  --accent-secondary: #b026ff;
+  --accent-ink: #001217;
+  --accent-glow: 0 0 16px rgba(0, 229, 255, 0.55);
+  --accent-secondary-glow: 0 0 16px rgba(176, 38, 255, 0.55);
 
   /* Status colors — reserved for state (live/good, hot/expensive), never series identity */
-  --status-good: #0ca30c;
-  --status-critical: #d03b3b;
+  --status-good: #39ff88;
+  --status-critical: #ff3860;
 
   /* Metric identity colors (dataviz categorical slots) */
   --metric-euclidean: #3987e5;
@@ -66,6 +70,14 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.glow-accent {
+  text-shadow: var(--accent-glow);
+}
+
+.glow-accent-secondary {
+  text-shadow: var(--accent-secondary-glow);
 }
 
 .katex {

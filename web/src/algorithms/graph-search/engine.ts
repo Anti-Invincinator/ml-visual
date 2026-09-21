@@ -1,174 +1,245 @@
-// Maze generation and graph search, implemented from scratch — no libraries.
+// Graph search on a real street network, implemented from scratch — no
+// pathfinding or geo libraries. The graph itself (nodes, edges, distances,
+// per-road-type travel-time costs) is pre-built once from real OpenStreetMap
+// data by scripts/build-street-graph.mjs and shipped as static JSON; this
+// module only implements the search algorithms that walk it.
 
-export interface Cell {
-  row: number;
-  col: number;
+import streetGraphData from "./data/street-graph.json";
+
+export interface StreetEdge {
+  a: number;
+  b: number;
+  distM: number;
+  cost: number; // seconds of travel time, modeled from road type + distance
+  highway: string;
+  points: [number, number][]; // [lat, lon] polyline, a to b
 }
 
-function makeRng(seed: number) {
-  let a = seed >>> 0;
-  return function next(): number {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+export interface StreetGraphData {
+  place: string;
+  attribution: string;
+  bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number };
+  nodes: [number, number][]; // [lat, lon]
+  edges: StreetEdge[];
 }
 
-export interface Maze {
-  open: boolean[][]; // size x size, true = passable
-  size: number;
+interface AdjEntry {
+  to: number;
+  distM: number;
+  cost: number;
+  highway: string;
+}
+
+export interface Graph {
+  data: StreetGraphData;
+  adjacency: AdjEntry[][];
+  edgeLookup: Map<string, StreetEdge>;
+}
+
+const pairKey = (a: number, b: number) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
+export function buildGraph(data: StreetGraphData): Graph {
+  const adjacency: AdjEntry[][] = data.nodes.map(() => []);
+  const edgeLookup = new Map<string, StreetEdge>();
+  for (const e of data.edges) {
+    adjacency[e.a].push({ to: e.b, distM: e.distM, cost: e.cost, highway: e.highway });
+    adjacency[e.b].push({ to: e.a, distM: e.distM, cost: e.cost, highway: e.highway });
+    edgeLookup.set(pairKey(e.a, e.b), e);
+  }
+  return { data, adjacency, edgeLookup };
+}
+
+export const streetGraph = buildGraph(streetGraphData as StreetGraphData);
+
+// The fastest road speed the cost model uses (see build-street-graph.mjs) —
+// straight-line distance divided by this speed can never overestimate real
+// travel time, which is what keeps A*'s heuristic admissible.
+const MAX_SPEED_KMH = 45;
+
+function haversineMeters(a: [number, number], b: [number, number]): number {
+  const R = 6371000;
+  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+  const dLon = ((b[1] - a[1]) * Math.PI) / 180;
+  const s1 = Math.sin(dLat / 2);
+  const s2 = Math.sin(dLon / 2);
+  const h =
+    s1 * s1 +
+    Math.cos((a[0] * Math.PI) / 180) * Math.cos((b[0] * Math.PI) / 180) * s2 * s2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function heuristicSeconds(graph: Graph, nodeId: number, goalId: number): number {
+  const distM = haversineMeters(graph.data.nodes[nodeId], graph.data.nodes[goalId]);
+  return (distM / 1000 / MAX_SPEED_KMH) * 3600;
+}
+
+export interface SearchResult {
+  visitedOrder: number[];
+  /** The edge (parent -> node) used to reach visitedOrder[i], null at i=0 (the start).
+   * Lets the UI light up streets as they're discovered, not just nodes. */
+  edgesOrder: (number | null)[];
+  path: number[] | null;
+}
+
+export function bfs(graph: Graph, start: number, goal: number): SearchResult {
+  const queue: number[] = [start];
+  const visitedOrder: number[] = [start];
+  const edgesOrder: (number | null)[] = [null];
+  const cameFrom = new Map<number, number>();
+  const seen = new Set<number>([start]);
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (current === goal) break;
+    for (const { to } of graph.adjacency[current]) {
+      if (!seen.has(to)) {
+        seen.add(to);
+        cameFrom.set(to, current);
+        visitedOrder.push(to);
+        edgesOrder.push(current);
+        queue.push(to);
+      }
+    }
+  }
+
+  return { visitedOrder, edgesOrder, path: reconstructPath(cameFrom, start, goal) };
+}
+
+export function dfs(graph: Graph, start: number, goal: number): SearchResult {
+  const stack: number[] = [start];
+  const visitedOrder: number[] = [];
+  const edgesOrder: (number | null)[] = [];
+  const cameFrom = new Map<number, number>();
+  const seen = new Set<number>([start]);
+
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    visitedOrder.push(current);
+    edgesOrder.push(cameFrom.get(current) ?? null);
+    if (current === goal) break;
+    for (const { to } of graph.adjacency[current]) {
+      if (!seen.has(to)) {
+        seen.add(to);
+        cameFrom.set(to, current);
+        stack.push(to);
+      }
+    }
+  }
+
+  return { visitedOrder, edgesOrder, path: reconstructPath(cameFrom, start, goal) };
+}
+
+interface FrontierEntry {
+  node: number;
+  priority: number;
+}
+
+/** Linear-scan extract-min — a real priority queue (binary heap) would be
+ * faster, but this graph tops out in the hundreds of nodes, so O(n) per pop
+ * is fine and this is far simpler to get right from scratch. */
+function popMin(frontier: FrontierEntry[]): FrontierEntry {
+  let bestIdx = 0;
+  for (let i = 1; i < frontier.length; i++) {
+    if (frontier[i].priority < frontier[bestIdx].priority) bestIdx = i;
+  }
+  return frontier.splice(bestIdx, 1)[0];
 }
 
 /**
- * Recursive-backtracker maze generation — a randomized DFS over "rooms" that
- * carves a wall down whenever it steps into a new room. Produces a perfect maze
- * (a spanning tree: exactly one path between any two rooms), then knocks down a
- * fraction of the remaining walls to add loops — without loops, BFS and DFS would
- * always reconstruct the identical path (a tree has only one route between two
- * nodes), which would make them look far more alike than they actually are.
+ * Greedy Best-First, Dijkstra, and A* are all the same algorithm — expand the
+ * frontier node with the lowest priority, relax neighbors, repeat — differing
+ * only in how priority is computed from the cost-so-far (g) and the node itself:
+ *   Greedy:   priority = h(n)          — ignores accumulated cost entirely
+ *   Dijkstra: priority = g(n)          — ignores the heuristic entirely
+ *   A*:       priority = g(n) + h(n)   — both, which is what makes it optimal
+ *                                          *and* efficient
  */
-export function generateMaze(rooms: number, seed: number, extraLoopFraction = 0.15): Maze {
-  const size = 2 * rooms + 1;
-  const open: boolean[][] = Array.from({ length: size }, () => new Array(size).fill(false));
-  const rng = makeRng(seed);
+function weightedSearch(
+  graph: Graph,
+  start: number,
+  goal: number,
+  priorityFn: (g: number, node: number) => number
+): SearchResult {
+  const gScore = new Map<number, number>([[start, 0]]);
+  const cameFrom = new Map<number, number>();
+  const visitedOrder: number[] = [];
+  const edgesOrder: (number | null)[] = [];
+  const closed = new Set<number>();
+  const frontier: FrontierEntry[] = [{ node: start, priority: priorityFn(0, start) }];
 
-  const roomCell = (r: number, c: number): [number, number] => [2 * r + 1, 2 * c + 1];
+  while (frontier.length > 0) {
+    const { node: current } = popMin(frontier);
+    if (closed.has(current)) continue;
+    closed.add(current);
+    visitedOrder.push(current);
+    edgesOrder.push(cameFrom.get(current) ?? null);
+    if (current === goal) break;
 
-  const visited: boolean[][] = Array.from({ length: rooms }, () => new Array(rooms).fill(false));
-  const stack: [number, number][] = [[0, 0]];
-  visited[0][0] = true;
-  const [sr, sc] = roomCell(0, 0);
-  open[sr][sc] = true;
-
-  const dirs: [number, number][] = [
-    [0, 1],
-    [1, 0],
-    [0, -1],
-    [-1, 0],
-  ];
-
-  while (stack.length > 0) {
-    const [r, c] = stack[stack.length - 1];
-    const options: [number, number, number, number][] = [];
-    for (const [dr, dc] of dirs) {
-      const nr = r + dr;
-      const nc = c + dc;
-      if (nr >= 0 && nr < rooms && nc >= 0 && nc < rooms && !visited[nr][nc]) {
-        options.push([nr, nc, dr, dc]);
+    const currentG = gScore.get(current)!;
+    for (const { to, cost } of graph.adjacency[current]) {
+      const tentativeG = currentG + cost;
+      if (tentativeG < (gScore.get(to) ?? Infinity)) {
+        gScore.set(to, tentativeG);
+        cameFrom.set(to, current);
+        frontier.push({ node: to, priority: priorityFn(tentativeG, to) });
       }
     }
-    if (options.length === 0) {
-      stack.pop();
-      continue;
-    }
-    const [nr, nc, dr, dc] = options[Math.floor(rng() * options.length)];
-    const [cr, cc] = roomCell(r, c);
-    open[cr + dr][cc + dc] = true;
-    const [ncr, ncc] = roomCell(nr, nc);
-    open[ncr][ncc] = true;
-    visited[nr][nc] = true;
-    stack.push([nr, nc]);
   }
 
-  const wallCandidates: [number, number][] = [];
-  for (let r = 0; r < rooms; r++) {
-    for (let c = 0; c < rooms; c++) {
-      const [cr, cc] = roomCell(r, c);
-      if (c + 1 < rooms && !open[cr][cc + 1]) wallCandidates.push([cr, cc + 1]);
-      if (r + 1 < rooms && !open[cr + 1][cc]) wallCandidates.push([cr + 1, cc]);
-    }
-  }
-  for (let i = wallCandidates.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [wallCandidates[i], wallCandidates[j]] = [wallCandidates[j], wallCandidates[i]];
-  }
-  const numExtra = Math.floor(wallCandidates.length * extraLoopFraction);
-  for (let i = 0; i < numExtra; i++) {
-    const [wr, wc] = wallCandidates[i];
-    open[wr][wc] = true;
-  }
-
-  return { open, size };
+  return { visitedOrder, edgesOrder, path: reconstructPath(cameFrom, start, goal) };
 }
 
-function neighbors(maze: Maze, cell: Cell): Cell[] {
-  const result: Cell[] = [];
-  for (const [dr, dc] of [
-    [-1, 0],
-    [1, 0],
-    [0, -1],
-    [0, 1],
-  ] as const) {
-    const row = cell.row + dr;
-    const col = cell.col + dc;
-    if (row >= 0 && row < maze.size && col >= 0 && col < maze.size && maze.open[row][col]) {
-      result.push({ row, col });
-    }
-  }
-  return result;
+export function greedyBestFirst(graph: Graph, start: number, goal: number): SearchResult {
+  return weightedSearch(graph, start, goal, (_g, node) => heuristicSeconds(graph, node, goal));
 }
 
-const key = (c: Cell) => `${c.row},${c.col}`;
+export function dijkstra(graph: Graph, start: number, goal: number): SearchResult {
+  return weightedSearch(graph, start, goal, (g) => g);
+}
 
-function reconstructPath(cameFrom: Map<string, Cell>, start: Cell, goal: Cell): Cell[] | null {
-  if (key(start) === key(goal)) return [start];
-  if (!cameFrom.has(key(goal))) return null;
-  const path: Cell[] = [goal];
+export function aStar(graph: Graph, start: number, goal: number): SearchResult {
+  return weightedSearch(graph, start, goal, (g, node) => g + heuristicSeconds(graph, node, goal));
+}
+
+export interface PathStats {
+  seconds: number;
+  meters: number;
+}
+
+export function pathStats(graph: Graph, path: number[] | null): PathStats {
+  if (!path) return { seconds: 0, meters: 0 };
+  let seconds = 0;
+  let meters = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const edge = graph.edgeLookup.get(pairKey(path[i], path[i + 1]));
+    if (!edge) continue;
+    seconds += edge.cost;
+    meters += edge.distM;
+  }
+  return { seconds, meters };
+}
+
+function reconstructPath(cameFrom: Map<number, number>, start: number, goal: number): number[] | null {
+  if (start === goal) return [start];
+  if (!cameFrom.has(goal)) return null;
+  const path: number[] = [goal];
   let cur = goal;
-  while (key(cur) !== key(start)) {
-    cur = cameFrom.get(key(cur))!;
+  while (cur !== start) {
+    cur = cameFrom.get(cur)!;
     path.push(cur);
   }
   return path.reverse();
 }
 
-export interface SearchResult {
-  visitedOrder: Cell[];
-  path: Cell[] | null;
-}
-
-export function bfs(maze: Maze, start: Cell, goal: Cell): SearchResult {
-  const queue: Cell[] = [start];
-  const visitedOrder: Cell[] = [start];
-  const cameFrom = new Map<string, Cell>();
-  const seen = new Set<string>([key(start)]);
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    if (key(current) === key(goal)) break;
-    for (const n of neighbors(maze, current)) {
-      if (!seen.has(key(n))) {
-        seen.add(key(n));
-        cameFrom.set(key(n), current);
-        visitedOrder.push(n);
-        queue.push(n);
-      }
+export function nearestNode(graph: Graph, lat: number, lon: number): number {
+  let best = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < graph.data.nodes.length; i++) {
+    const d = haversineMeters([lat, lon], graph.data.nodes[i]);
+    if (d < bestDist) {
+      bestDist = d;
+      best = i;
     }
   }
-
-  return { visitedOrder, path: reconstructPath(cameFrom, start, goal) };
-}
-
-export function dfs(maze: Maze, start: Cell, goal: Cell): SearchResult {
-  const stack: Cell[] = [start];
-  const visitedOrder: Cell[] = [];
-  const cameFrom = new Map<string, Cell>();
-  const seen = new Set<string>([key(start)]);
-
-  while (stack.length > 0) {
-    const current = stack.pop()!;
-    visitedOrder.push(current);
-    if (key(current) === key(goal)) break;
-    for (const n of neighbors(maze, current)) {
-      if (!seen.has(key(n))) {
-        seen.add(key(n));
-        cameFrom.set(key(n), current);
-        stack.push(n);
-      }
-    }
-  }
-
-  return { visitedOrder, path: reconstructPath(cameFrom, start, goal) };
+  return best;
 }

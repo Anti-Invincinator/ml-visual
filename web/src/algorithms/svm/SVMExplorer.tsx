@@ -166,8 +166,8 @@ function KernelPanel({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <h3 className="font-mono text-[13px] text-[var(--ink-primary)]">{title}</h3>
-        <span className="tabular font-mono text-[12px] text-[var(--ink-muted)]">
+        <h3 className="font-mono text-[15px] text-[var(--ink-primary)]">{title}</h3>
+        <span className="tabular font-mono text-[14px] text-[var(--ink-muted)]">
           {correct}/{data.length} correct · {svCount} support vectors
         </span>
       </div>
@@ -216,7 +216,7 @@ export default function SVMExplorer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-[13px] text-[var(--ink-secondary)]">
+      <p className="text-[15px] text-[var(--ink-secondary)]">
         Two rings, not linearly separable — no straight line can split them. Both models train on the exact same
         points, same regularization, same learning rate. Only the kernel changes.
       </p>
@@ -247,7 +247,7 @@ export default function SVMExplorer() {
       </div>
       <button
         onClick={handleTrainClick}
-        className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[13px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
+        className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[15px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
       >
         {buttonLabel}
       </button>

@@ -3,40 +3,43 @@ import type { Metadata } from "next";
 import GraphSearchExplorer from "@/algorithms/graph-search/GraphSearchExplorer";
 
 export const metadata: Metadata = {
-  title: "BFS vs. DFS — ml/visual",
+  title: "Graph search — ml/visual",
   description:
-    "Breadth-first search vs. depth-first search racing through the same maze, implemented from scratch.",
+    "BFS, DFS, Greedy Best-First, A*, and Dijkstra on a real street network, implemented from scratch.",
 };
 
 export default function GraphSearchPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
-      <Link href="/" className="font-mono text-xs text-[var(--ink-muted)] hover:text-[var(--ink-secondary)]">
+      <Link href="/" className="font-mono text-sm text-[var(--ink-muted)] hover:text-[var(--ink-secondary)]">
         ← all algorithms
       </Link>
 
-      <h1 className="mt-6 text-3xl font-medium tracking-tight text-[var(--ink-primary)]">
-        BFS vs. DFS
+      <h1 className="mt-6 text-4xl font-medium tracking-tight text-[var(--ink-primary)]">
+        Graph search
       </h1>
-      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-secondary)]">
-        Breadth-first and depth-first search are the same algorithm with one line changed — swap a queue for a
-        stack and the entire character of the search flips. BFS explores everything one step away before anything
-        two steps away, which is exactly what guarantees it finds the shortest path. DFS commits to one corridor
-        and rides it as far as it goes before backtracking — often faster to write, never guaranteed to find the
-        short way.
+      <p className="mt-3 max-w-2xl text-[17px] leading-relaxed text-[var(--ink-secondary)]">
+        Five algorithms, one shared skeleton: keep a frontier of intersections to explore, expand whichever one is
+        highest-priority, repeat until the goal is found. BFS (queue) and DFS (stack) don&apos;t know about cost at
+        all — they only count intersections crossed. Greedy, A*, and Dijkstra all use a priority instead, and differ
+        only in what that priority is made of: Greedy uses just the straight-line distance to the goal, Dijkstra
+        uses just the travel time accumulated so far, and A* uses both — which is exactly what makes it both
+        optimal <em>and</em> efficient.
       </p>
-      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
-        In practice: this is the literal core of GPS turn-by-turn directions (with edge weights and a heuristic,
-        it grows into A* — next on this site&apos;s list) — and it&apos;s exactly how you&apos;d solve a corn maze
-        by hand: DFS is &ldquo;always turn left,&rdquo; BFS is &ldquo;send someone down every path at once.&rdquo;
+      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-muted)]">
+        The map below is not a procedural maze — it&apos;s the real street network of Manhattan&apos;s West
+        Village, pulled from OpenStreetMap. Every intersection and street segment is a real place; each
+        street&apos;s traversal cost is modeled as travel time from its actual length and road type. This is the
+        literal core of GPS turn-by-turn directions: A* is what most real routing engines actually run, for the
+        exact reason demonstrated here.
       </p>
 
       <section className="mt-16">
-        <h2 className="text-lg font-medium text-[var(--ink-primary)]">Same maze, different frontier</h2>
-        <p className="mt-1 text-[13px] text-[var(--ink-secondary)]">
-          The maze has a few extra loops cut into it on purpose — in a loop-free maze there&apos;s only one possible
-          route between any two cells, so BFS and DFS would always find the identical path and the comparison
-          would be meaningless.
+        <h2 className="text-xl font-medium text-[var(--ink-primary)]">One street network, five algorithms</h2>
+        <p className="mt-1 text-[15px] text-[var(--ink-secondary)]">
+          Place your own start and goal, then switch algorithms on the same map. Watch what happens to travel time
+          when an algorithm that doesn&apos;t know about road speed (BFS, DFS, Greedy) meets a real city grid that
+          has some streets built for speed and others not.
         </p>
         <div className="mt-8">
           <GraphSearchExplorer />
@@ -44,8 +47,8 @@ export default function GraphSearchPage() {
       </section>
 
       <section className="mt-20 border-t border-[var(--hairline)] pt-8">
-        <p className="text-[13px] text-[var(--ink-secondary)]">
-          The from-scratch Python version of this — same maze generator, same comparison — lives in{" "}
+        <p className="text-[15px] text-[var(--ink-secondary)]">
+          The from-scratch Python version of this — same street graph, same five algorithms — lives in{" "}
           <code className="font-mono text-[var(--ink-primary)]">
             notebooks/search-optimization/graph-search/graph_search.ipynb
           </code>

@@ -82,7 +82,7 @@ function GeneChip({
   const bg = origin === "a" ? PARENT_A_COLOR : origin === "b" ? PARENT_B_COLOR : "var(--surface)";
   return (
     <div
-      className="relative flex h-7 w-7 items-center justify-center rounded font-mono text-[11px] text-white"
+      className="relative flex h-7 w-7 items-center justify-center rounded font-mono text-[13px] text-white"
       style={{ background: bg, boxShadow: mutated ? `0 0 0 2px ${MUTATION_COLOR}` : undefined }}
     >
       {value}
@@ -94,7 +94,7 @@ function GeneticsPanel({ sample }: { sample: BreedingSample }) {
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="mb-1 font-mono text-[11px] text-[var(--ink-muted)]">parent A</p>
+        <p className="mb-1 font-mono text-[13px] text-[var(--ink-muted)]">parent A</p>
         <div className="flex gap-1">
           {sample.parentA.map((v, i) => (
             <GeneChip key={i} value={v} origin="a" mutated={false} />
@@ -102,7 +102,7 @@ function GeneticsPanel({ sample }: { sample: BreedingSample }) {
         </div>
       </div>
       <div>
-        <p className="mb-1 font-mono text-[11px] text-[var(--ink-muted)]">parent B</p>
+        <p className="mb-1 font-mono text-[13px] text-[var(--ink-muted)]">parent B</p>
         <div className="flex gap-1">
           {sample.parentB.map((v, i) => (
             <GeneChip key={i} value={v} origin="b" mutated={false} />
@@ -110,7 +110,7 @@ function GeneticsPanel({ sample }: { sample: BreedingSample }) {
         </div>
       </div>
       <div>
-        <p className="mb-1 font-mono text-[11px] text-[var(--ink-muted)]">
+        <p className="mb-1 font-mono text-[13px] text-[var(--ink-muted)]">
           child — crossover at row {sample.cutPoint}, mutated rows: {sample.mutatedRows.length ? sample.mutatedRows.join(", ") : "none"}
         </p>
         <div className="flex gap-1">
@@ -119,7 +119,7 @@ function GeneticsPanel({ sample }: { sample: BreedingSample }) {
           ))}
         </div>
       </div>
-      <p className="font-mono text-[11px] text-[var(--ink-muted)]">
+      <p className="font-mono text-[13px] text-[var(--ink-muted)]">
         <span style={{ color: PARENT_A_COLOR }}>■</span> from parent A &nbsp;
         <span style={{ color: PARENT_B_COLOR }}>■</span> from parent B &nbsp;
         <span style={{ color: MUTATION_COLOR }}>◻</span> mutated after crossover
@@ -165,7 +165,7 @@ export default function GeneticAlgorithmExplorer() {
               <button
                 key={size}
                 onClick={() => changeN(size)}
-                className={`border px-3 py-1.5 font-mono text-[12px] transition-colors ${
+                className={`border px-3 py-1.5 font-mono text-[14px] transition-colors ${
                   n === size
                     ? "border-[var(--accent)] text-[var(--accent)]"
                     : "border-[var(--hairline)] text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
@@ -177,20 +177,20 @@ export default function GeneticAlgorithmExplorer() {
           </div>
         </div>
         <div className="flex flex-col justify-center gap-4">
-          <p className="text-[13px] text-[var(--ink-secondary)]">
+          <p className="text-[15px] text-[var(--ink-secondary)]">
             Place {n} queens on a {n}×{n} board so none attack another — no two in the same column, no two on the
             same diagonal (rows are free: each queen owns one row by construction). Red lines mark every pair still
             attacking each other.
           </p>
           <div>
-            <p className="mb-1 font-mono text-[12px] text-[var(--ink-secondary)]">fitness (pairs not attacking)</p>
+            <p className="mb-1 font-mono text-[14px] text-[var(--ink-secondary)]">fitness (pairs not attacking)</p>
             <Formula tex="f = \binom{n}{2} - \text{conflicts}" />
-            <p className="tabular font-mono text-[13px] text-[var(--ink-primary)]">
+            <p className="tabular font-mono text-[15px] text-[var(--ink-primary)]">
               {mp} − {current.best.conflicts} = {mp - current.best.conflicts} / {mp}
               {solved && <span className="ml-2 text-[var(--status-good)]">solved</span>}
             </p>
           </div>
-          <p className="font-mono text-[12px] text-[var(--ink-muted)]">
+          <p className="font-mono text-[14px] text-[var(--ink-muted)]">
             generation {Math.min(step, snapshots.length - 1)}
             {solved ? " (converged)" : ` / ${MAX_GENERATIONS}`}
             {current.restarted && (
@@ -199,7 +199,7 @@ export default function GeneticAlgorithmExplorer() {
           </p>
           <button
             onClick={reshuffle}
-            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[13px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
+            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[15px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
           >
             new seed
           </button>
@@ -207,8 +207,8 @@ export default function GeneticAlgorithmExplorer() {
       </div>
 
       <div>
-        <h3 className="text-[15px] font-medium text-[var(--ink-primary)]">The genetics, made visible</h3>
-        <p className="mt-1 max-w-xl text-[13px] text-[var(--ink-secondary)]">
+        <h3 className="text-[17px] font-medium text-[var(--ink-primary)]">The genetics, made visible</h3>
+        <p className="mt-1 max-w-xl text-[15px] text-[var(--ink-secondary)]">
           Each chromosome is just an array — one column index per row. One representative breeding event from this
           generation: two parents chosen by tournament, spliced at a random cut point, then mutated.
         </p>

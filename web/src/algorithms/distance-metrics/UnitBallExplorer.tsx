@@ -58,7 +58,7 @@ export default function UnitBallExplorer() {
       </svg>
 
       <div className="flex flex-col justify-center gap-5">
-        <p className="text-[13px] text-[var(--ink-secondary)]">
+        <p className="text-[15px] text-[var(--ink-secondary)]">
           Every point on this curve is distance <span className="font-mono text-[var(--ink-primary)]">1</span> from
           the origin. The dashed shapes are fixed references — the diamond is Manhattan (
           <span className="font-mono">p=1</span>), the square is Chebyshev (<span className="font-mono">p=∞</span>).
@@ -69,10 +69,10 @@ export default function UnitBallExplorer() {
 
         <div>
           <div className="flex items-baseline justify-between">
-            <label htmlFor="p-slider" className="font-mono text-[13px] text-[var(--ink-secondary)]">
+            <label htmlFor="p-slider" className="font-mono text-[15px] text-[var(--ink-secondary)]">
               p
             </label>
-            <span className="tabular font-mono text-[15px] text-[var(--metric-minkowski)]">
+            <span className="tabular font-mono text-[17px] text-[var(--metric-minkowski)]">
               {pRaw >= SLIDER_MAX ? "∞" : pRaw.toFixed(1)}
             </span>
           </div>
@@ -86,7 +86,7 @@ export default function UnitBallExplorer() {
             onChange={(e) => setPRaw(Number(e.target.value))}
             className="mt-2 w-full accent-[var(--metric-minkowski)]"
           />
-          <div className="mt-1 flex justify-between font-mono text-[11px] text-[var(--ink-muted)]">
+          <div className="mt-1 flex justify-between font-mono text-[13px] text-[var(--ink-muted)]">
             <span>1 (Manhattan)</span>
             <span>2 (Euclidean)</span>
             <span>∞ (Chebyshev)</span>

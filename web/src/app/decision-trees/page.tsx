@@ -11,27 +11,27 @@ export const metadata: Metadata = {
 export default function DecisionTreesPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
-      <Link href="/" className="font-mono text-xs text-[var(--ink-muted)] hover:text-[var(--ink-secondary)]">
+      <Link href="/" className="font-mono text-sm text-[var(--ink-muted)] hover:text-[var(--ink-secondary)]">
         ← all algorithms
       </Link>
 
-      <h1 className="mt-6 text-3xl font-medium tracking-tight text-[var(--ink-primary)]">
+      <h1 className="mt-6 text-4xl font-medium tracking-tight text-[var(--ink-primary)]">
         Decision trees
       </h1>
-      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-secondary)]">
+      <p className="mt-3 max-w-2xl text-[17px] leading-relaxed text-[var(--ink-secondary)]">
         A decision tree asks one question at a time — is this feature above or below some threshold? — and picks
         each question greedily to make the two resulting groups as pure as possible. No gradients, no iterative
         optimization: just recursive splitting, implemented from scratch below with Gini impurity as the criterion.
       </p>
-      <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--ink-muted)]">
+      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-muted)]">
         In practice: a loan-approval flowchart (&ldquo;credit score above X? income above Y?&rdquo;) or a medical
         triage checklist are both, functionally, someone hand-building the exact structure this notebook grows
         automatically from data — which is also why trees are popular anywhere a human needs to audit the decision.
       </p>
 
       <section className="mt-16">
-        <h2 className="text-lg font-medium text-[var(--ink-primary)]">Depth is the whole knob</h2>
-        <p className="mt-1 text-[13px] text-[var(--ink-secondary)]">
+        <h2 className="text-xl font-medium text-[var(--ink-primary)]">Depth is the whole knob</h2>
+        <p className="mt-1 text-[15px] text-[var(--ink-secondary)]">
           Drag the depth slider — the tree diagram and decision surface update instantly, and the accuracy chart
           below shows exactly where more depth stops helping.
         </p>
@@ -41,7 +41,7 @@ export default function DecisionTreesPage() {
       </section>
 
       <section className="mt-20 border-t border-[var(--hairline)] pt-8">
-        <p className="text-[13px] text-[var(--ink-secondary)]">
+        <p className="text-[15px] text-[var(--ink-secondary)]">
           The from-scratch Python/numpy version of this — same tree, same dataset, same overfitting curve — lives in{" "}
           <code className="font-mono text-[var(--ink-primary)]">
             notebooks/supervised/decision-trees/decision_trees.ipynb

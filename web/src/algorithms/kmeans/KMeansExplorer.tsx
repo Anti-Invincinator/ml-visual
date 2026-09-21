@@ -44,8 +44,8 @@ function Panel({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <h3 className="font-mono text-[13px] text-[var(--ink-primary)]">{title}</h3>
-        <span className="tabular font-mono text-[12px] text-[var(--ink-muted)]">
+        <h3 className="font-mono text-[15px] text-[var(--ink-primary)]">{title}</h3>
+        <span className="tabular font-mono text-[14px] text-[var(--ink-muted)]">
           inertia {snapshot.inertia.toFixed(2)}
         </span>
       </div>
@@ -76,7 +76,7 @@ function Panel({
           );
         })}
       </svg>
-      <p className="mt-1 font-mono text-[11px] text-[var(--ink-muted)]">
+      <p className="mt-1 font-mono text-[13px] text-[var(--ink-muted)]">
         {converged ? `converged in ${trajectory.length - 1} iterations` : `iteration ${step}`}
       </p>
       <div className="mt-1 text-[var(--ink-muted)]">
@@ -114,7 +114,7 @@ export default function KMeansExplorer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-[13px] text-[var(--ink-secondary)]">
+      <p className="text-[15px] text-[var(--ink-secondary)]">
         Same three blobs, same k=3, same number of iterations. Only how the centroids start differs. Random init
         picks three data points at random and sometimes strands a centroid where it can&apos;t recover; k-means++
         spreads the initial picks out on purpose.
@@ -126,7 +126,7 @@ export default function KMeansExplorer() {
       </div>
       <button
         onClick={reshuffle}
-        className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[13px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
+        className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[15px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
       >
         new seed
       </button>

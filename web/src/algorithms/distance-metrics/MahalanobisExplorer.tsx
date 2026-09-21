@@ -114,27 +114,27 @@ export default function MahalanobisExplorer() {
       </svg>
 
       <div className="flex flex-col justify-center gap-4">
-        <p className="text-[13px] text-[var(--ink-secondary)]">
+        <p className="text-[15px] text-[var(--ink-secondary)]">
           The gray dots are correlated data — y roughly tracks 0.8x. The dashed circle is &ldquo;distance {RADIUS}&rdquo;
           under Euclidean distance; the solid ellipse is &ldquo;distance {RADIUS}&rdquo; under Mahalanobis distance.
           Drag the point and watch which one actually tracks the shape of the data.
         </p>
         <div>
-          <p className="mb-1 font-mono text-[12px] text-[var(--ink-secondary)]">Mahalanobis distance</p>
+          <p className="mb-1 font-mono text-[14px] text-[var(--ink-secondary)]">Mahalanobis distance</p>
           <Formula tex="d_M(x) = \sqrt{(x-\mu)^{\mathsf T} \Sigma^{-1} (x-\mu)}" />
         </div>
         <dl className="border border-[var(--hairline)]">
           <div className="flex items-center justify-between border-b border-[var(--hairline)] px-4 py-3">
-            <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
+            <dt className="flex items-center gap-2 text-[15px] text-[var(--ink-secondary)]">
               <span className="h-2 w-2 rounded-full border border-[var(--ink-muted)]" /> Euclidean
             </dt>
-            <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{euclidean.toFixed(2)}</dd>
+            <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{euclidean.toFixed(2)}</dd>
           </div>
           <div className="flex items-center justify-between px-4 py-3">
-            <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
+            <dt className="flex items-center gap-2 text-[15px] text-[var(--ink-secondary)]">
               <span className="h-2 w-2 rounded-full" style={{ background: "var(--accent-secondary)" }} /> Mahalanobis
             </dt>
-            <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{mahalanobis.toFixed(2)}</dd>
+            <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{mahalanobis.toFixed(2)}</dd>
           </div>
         </dl>
       </div>

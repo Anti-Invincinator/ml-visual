@@ -11,20 +11,23 @@ export default function AlgorithmCard({ algorithm }: { algorithm: AlgorithmEntry
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-[15px] font-medium text-[var(--ink-primary)]">
+        <h3 className="text-[17px] font-medium text-[var(--ink-primary)]">
           {algorithm.name}
         </h3>
         {algorithm.status === "live" ? (
-          <span className="mt-0.5 shrink-0 rounded-full border border-[var(--status-good)]/30 bg-[var(--status-good)]/10 px-2 py-0.5 font-mono text-[11px] text-[var(--status-good)]">
+          <span
+            className="mt-0.5 shrink-0 rounded-full border border-[var(--status-good)]/40 bg-[var(--status-good)]/10 px-2 py-0.5 font-mono text-[13px] text-[var(--status-good)]"
+            style={{ boxShadow: "0 0 10px rgba(57, 255, 136, 0.35)" }}
+          >
             live
           </span>
         ) : (
-          <span className="mt-0.5 shrink-0 rounded-full border border-[var(--border)] px-2 py-0.5 font-mono text-[11px] text-[var(--ink-muted)]">
+          <span className="mt-0.5 shrink-0 rounded-full border border-[var(--border)] px-2 py-0.5 font-mono text-[13px] text-[var(--ink-muted)]">
             soon
           </span>
         )}
       </div>
-      <p className="mt-2 text-[13px] leading-relaxed text-[var(--ink-secondary)]">
+      <p className="mt-2 text-[15px] leading-relaxed text-[var(--ink-secondary)]">
         {algorithm.description}
       </p>
     </div>

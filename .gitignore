@@ -22,3 +22,6 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Raw OSM extracts (build-time input for scripts/build-street-graph.mjs — large, regeneratable)
+web/scripts/raw/

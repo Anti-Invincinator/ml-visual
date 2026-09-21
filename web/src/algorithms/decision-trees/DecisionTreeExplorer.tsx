@@ -221,12 +221,12 @@ export default function DecisionTreeExplorer() {
             style={{ width: DISPLAY_SIZE, height: DISPLAY_SIZE }}
             className="block"
           />
-          <p className="mt-2 font-mono text-[11px] text-[var(--ink-muted)]">
+          <p className="mt-2 font-mono text-[13px] text-[var(--ink-muted)]">
             filled = train · ring = test (held out, never split on)
           </p>
         </div>
         <div className="flex flex-col justify-center gap-5">
-          <p className="text-[13px] text-[var(--ink-secondary)]">
+          <p className="text-[15px] text-[var(--ink-secondary)]">
             Four overlapping blobs in a checkerboard — the same shape that needed a hidden layer to solve with
             backprop. A tree solves it differently: greedy axis-aligned splits, each one picked to minimize Gini
             impurity in the two resulting groups.
@@ -234,10 +234,10 @@ export default function DecisionTreeExplorer() {
           <Formula tex="\text{Gini}(S) = 1 - \sum_c p_c^2" block />
           <div>
             <div className="flex items-baseline justify-between">
-              <label htmlFor="dt-depth" className="font-mono text-[13px] text-[var(--ink-secondary)]">
+              <label htmlFor="dt-depth" className="font-mono text-[15px] text-[var(--ink-secondary)]">
                 max depth
               </label>
-              <span className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{depth}</span>
+              <span className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{depth}</span>
             </div>
             <input
               id="dt-depth"
@@ -250,15 +250,15 @@ export default function DecisionTreeExplorer() {
               className="mt-2 w-full accent-[var(--accent)]"
             />
           </div>
-          <p className="tabular font-mono text-[12px] text-[var(--ink-muted)]">
+          <p className="tabular font-mono text-[14px] text-[var(--ink-muted)]">
             train accuracy {(current.train * 100).toFixed(1)}% · test accuracy {(current.test * 100).toFixed(1)}%
           </p>
         </div>
       </div>
 
       <div>
-        <h3 className="text-[15px] font-medium text-[var(--ink-primary)]">The tree itself</h3>
-        <p className="mt-1 max-w-xl text-[13px] text-[var(--ink-secondary)]">
+        <h3 className="text-[17px] font-medium text-[var(--ink-primary)]">The tree itself</h3>
+        <p className="mt-1 max-w-xl text-[15px] text-[var(--ink-secondary)]">
           Every box is a question; every colored dot is a leaf&apos;s final answer.
         </p>
         <div className="mt-4">
@@ -267,8 +267,8 @@ export default function DecisionTreeExplorer() {
       </div>
 
       <div>
-        <h3 className="text-[15px] font-medium text-[var(--ink-primary)]">Accuracy vs. depth</h3>
-        <p className="mt-1 max-w-xl text-[13px] text-[var(--ink-secondary)]">
+        <h3 className="text-[17px] font-medium text-[var(--ink-primary)]">Accuracy vs. depth</h3>
+        <p className="mt-1 max-w-xl text-[15px] text-[var(--ink-secondary)]">
           Train accuracy climbs toward 100% no matter how deep you go — the tree can always carve out one more tiny
           region to fit one more noisy point. Test accuracy tells the real story.
         </p>
@@ -301,7 +301,7 @@ export default function DecisionTreeExplorer() {
             acc
           </text>
         </svg>
-        <div className="mt-2 flex gap-4 font-mono text-[11px] text-[var(--ink-muted)]">
+        <div className="mt-2 flex gap-4 font-mono text-[13px] text-[var(--ink-muted)]">
           <span className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full" style={{ background: "var(--accent-secondary)" }} /> train
           </span>

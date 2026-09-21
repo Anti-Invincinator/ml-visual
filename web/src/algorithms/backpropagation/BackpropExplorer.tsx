@@ -7,16 +7,15 @@ import {
   initNetwork,
   meanSquaredError,
   trainStep,
-  XOR_DATA,
+  PROBLEMS,
   type NetworkParams,
+  type Problem,
 } from "./engine";
 
 const SIZE = 320;
 const MARGIN = 24;
 const SPAN = SIZE - 2 * MARGIN;
-const TOTAL_EPOCHS = 3000;
 const SNAPSHOTS = 60;
-const EPOCHS_PER_SNAPSHOT = TOTAL_EPOCHS / SNAPSHOTS;
 const STEP_MS = 70;
 
 function toPx(x: number, y: number) {
@@ -51,31 +50,20 @@ function heatmapFor(params: NetworkParams): ImageData {
   return new ImageData(data, SIZE, SIZE);
 }
 
-function buildTrajectory(lr: number) {
-  let params = initNetwork(42);
+function buildTrajectory(problem: Problem, lr: number) {
+  const epochsPerSnapshot = problem.epochs / SNAPSHOTS;
+  let params = initNetwork(42, problem.hiddenSize);
   const snapshots: NetworkParams[] = [params];
-  const losses: number[] = [meanSquaredError(params)];
-  for (let epoch = 0; epoch < TOTAL_EPOCHS; epoch++) {
-    params = trainStep(params, lr);
-    if ((epoch + 1) % EPOCHS_PER_SNAPSHOT === 0) {
+  const losses: number[] = [meanSquaredError(params, problem.data)];
+  for (let epoch = 0; epoch < problem.epochs; epoch++) {
+    params = trainStep(params, lr, problem.data);
+    if ((epoch + 1) % epochsPerSnapshot === 0) {
       snapshots.push(params);
-      losses.push(meanSquaredError(params));
+      losses.push(meanSquaredError(params, problem.data));
     }
   }
   return { snapshots, losses };
 }
-
-// Fixed layout for the 2-3-1 architecture — the node/edge diagram of the live forward pass.
-const INPUT_POS: [number, number][] = [
-  [30, 40],
-  [30, 100],
-];
-const HIDDEN_POS: [number, number][] = [
-  [150, 20],
-  [150, 70],
-  [150, 120],
-];
-const OUTPUT_POS: [number, number] = [270, 70];
 
 function activationFill(a: number): string {
   const t = Math.max(0, Math.min(1, a));
@@ -85,19 +73,42 @@ function activationFill(a: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
+// Node/edge layout for the diagram scales with hidden-layer size: XOR's 3
+// units get generous 12px circles, circles' 8 units get a taller canvas and
+// smaller nodes so they don't overlap.
+function computeLayout(hiddenSize: number) {
+  const nodeRadius = hiddenSize > 4 ? 7 : 12;
+  const height = Math.max(140, hiddenSize * (nodeRadius * 2 + 8));
+  const inputPos: [number, number][] = [
+    [30, height / 2 - 30],
+    [30, height / 2 + 30],
+  ];
+  const hiddenMargin = nodeRadius + 6;
+  const hiddenPos: [number, number][] = Array.from({ length: hiddenSize }, (_, i) => [
+    150,
+    hiddenSize === 1
+      ? height / 2
+      : hiddenMargin + (i * (height - 2 * hiddenMargin)) / (hiddenSize - 1),
+  ]);
+  const outputPos: [number, number] = [270, height / 2];
+  return { height, nodeRadius, inputPos, hiddenPos, outputPos };
+}
+
 function NetworkDiagram({ params, input }: { params: NetworkParams; input: [number, number] }) {
   const { hidden, output } = forward(params, input);
+  const layout = useMemo(() => computeLayout(params.w1.length), [params.w1.length]);
+  const { height, nodeRadius, inputPos, hiddenPos, outputPos } = layout;
 
   return (
-    <svg viewBox="0 0 300 140" width="100%" className="max-w-[340px]">
+    <svg viewBox={`0 0 300 ${height}`} width="100%" className="max-w-[340px]">
       {params.w1.map((w, hi) =>
         w.map((weight, ii) => (
           <line
             key={`h${hi}-i${ii}`}
-            x1={INPUT_POS[ii][0]}
-            y1={INPUT_POS[ii][1]}
-            x2={HIDDEN_POS[hi][0]}
-            y2={HIDDEN_POS[hi][1]}
+            x1={inputPos[ii][0]}
+            y1={inputPos[ii][1]}
+            x2={hiddenPos[hi][0]}
+            y2={hiddenPos[hi][1]}
             stroke="var(--ink-muted)"
             strokeWidth={Math.min(4, Math.abs(weight) * 1.6)}
             opacity={0.55}
@@ -107,17 +118,17 @@ function NetworkDiagram({ params, input }: { params: NetworkParams; input: [numb
       {params.w2.map((weight, hi) => (
         <line
           key={`o-h${hi}`}
-          x1={HIDDEN_POS[hi][0]}
-          y1={HIDDEN_POS[hi][1]}
-          x2={OUTPUT_POS[0]}
-          y2={OUTPUT_POS[1]}
+          x1={hiddenPos[hi][0]}
+          y1={hiddenPos[hi][1]}
+          x2={outputPos[0]}
+          y2={outputPos[1]}
           stroke="var(--ink-muted)"
           strokeWidth={Math.min(4, Math.abs(weight) * 1.6)}
           opacity={0.55}
         />
       ))}
 
-      {INPUT_POS.map(([x, y], i) => (
+      {inputPos.map(([x, y], i) => (
         <g key={`in${i}`}>
           <circle cx={x} cy={y} r={12} fill={activationFill(input[i])} stroke="var(--border-strong)" />
           <text x={x} y={y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize={9} fill="var(--page)">
@@ -125,14 +136,14 @@ function NetworkDiagram({ params, input }: { params: NetworkParams; input: [numb
           </text>
         </g>
       ))}
-      {HIDDEN_POS.map(([x, y], i) => (
-        <circle key={`hid${i}`} cx={x} cy={y} r={12} fill={activationFill(hidden[i])} stroke="var(--border-strong)" />
+      {hiddenPos.map(([x, y], i) => (
+        <circle key={`hid${i}`} cx={x} cy={y} r={nodeRadius} fill={activationFill(hidden[i])} stroke="var(--border-strong)" />
       ))}
       <g>
-        <circle cx={OUTPUT_POS[0]} cy={OUTPUT_POS[1]} r={14} fill={activationFill(output)} stroke="var(--ink-primary)" strokeWidth={1.5} />
+        <circle cx={outputPos[0]} cy={outputPos[1]} r={14} fill={activationFill(output)} stroke="var(--ink-primary)" strokeWidth={1.5} />
         <text
-          x={OUTPUT_POS[0]}
-          y={OUTPUT_POS[1] - 22}
+          x={outputPos[0]}
+          y={outputPos[1] - 22}
           textAnchor="middle"
           fontFamily="var(--font-mono)"
           fontSize={11}
@@ -152,14 +163,25 @@ interface Trajectory {
 
 export default function BackpropExplorer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [lr, setLr] = useState(4);
+  const [problemKey, setProblemKey] = useState(PROBLEMS[0].key);
+  const problem = PROBLEMS.find((p) => p.key === problemKey)!;
+
+  const [lr, setLr] = useState(problem.defaultLr);
   const [trajectory, setTrajectory] = useState<Trajectory | null>(null);
   const [step, setStep] = useState(0);
   const [x1, setX1] = useState(0.3);
   const [x2, setX2] = useState(0.7);
 
+  function selectProblem(key: string) {
+    const next = PROBLEMS.find((p) => p.key === key)!;
+    setProblemKey(key);
+    setLr(next.defaultLr);
+    setTrajectory(null);
+    setStep(0);
+  }
+
   // Fixed, cheap to compute — the network as it looks before anyone hits "train".
-  const untrainedParams = useMemo(() => initNetwork(42), []);
+  const untrainedParams = useMemo(() => initNetwork(42, problem.hiddenSize), [problem.hiddenSize]);
   const currentParams = trajectory
     ? trajectory.snapshots[Math.min(step, trajectory.snapshots.length - 1)]
     : untrainedParams;
@@ -175,17 +197,17 @@ export default function BackpropExplorer() {
     if (!canvas || !ctx || !images) return;
     ctx.putImageData(images[Math.min(step, images.length - 1)], 0, 0);
 
-    for (const { input, label } of XOR_DATA) {
+    for (const { input, label } of problem.data) {
       const p = toPx(input[0], input[1]);
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, problem.pointRadius, 0, Math.PI * 2);
       ctx.fillStyle = label === 1 ? "#9085e9" : "#ffffff";
       ctx.fill();
-      ctx.lineWidth = 2;
+      ctx.lineWidth = problem.pointRadius > 4 ? 2 : 1;
       ctx.strokeStyle = label === 1 ? "#ffffff" : "#0d0d0f";
       ctx.stroke();
     }
-  }, [step]);
+  }, [step, problem]);
 
   // The heavy part (training + rendering dozens of heatmap frames) only ever runs
   // once "train" is clicked — never eagerly on mount or on every lr change.
@@ -195,7 +217,7 @@ export default function BackpropExplorer() {
       : [heatmapFor(untrainedParams)];
     redraw();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trajectory]);
+  }, [trajectory, untrainedParams]);
 
   useEffect(() => {
     redraw();
@@ -210,7 +232,7 @@ export default function BackpropExplorer() {
 
   function handleTrainClick() {
     if (!trajectory) {
-      setTrajectory(buildTrajectory(lr));
+      setTrajectory(buildTrajectory(problem, lr));
     }
     setStep(0);
   }
@@ -241,29 +263,44 @@ export default function BackpropExplorer() {
 
   return (
     <div className="flex flex-col gap-12">
+      <div className="flex flex-wrap gap-2">
+        {PROBLEMS.map((p) => (
+          <button
+            key={p.key}
+            onClick={() => selectProblem(p.key)}
+            className={`border px-3 py-1.5 font-mono text-[14px] transition-colors ${
+              problemKey === p.key
+                ? "border-[var(--accent)] text-[var(--accent)]"
+                : "border-[var(--hairline)] text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[320px_1fr]">
         <canvas ref={canvasRef} width={SIZE} height={SIZE} />
         <div className="flex flex-col justify-center gap-5">
-          <p className="text-[13px] text-[var(--ink-secondary)]">
-            XOR isn&apos;t linearly separable — no single straight line divides the two classes. A network with a
-            hidden layer bends the space until it can. Hit train to watch the boundary form over{" "}
-            <span className="font-mono text-[var(--ink-primary)]">{TOTAL_EPOCHS}</span> epochs of full-batch
+          <p className="text-[15px] text-[var(--ink-secondary)]">
+            {problem.blurb} Hit train to watch the boundary form over{" "}
+            <span className="font-mono text-[var(--ink-primary)]">{problem.epochs}</span> epochs of full-batch
             gradient descent, weights updated by hand-derived backprop.
           </p>
           <Formula tex="h = \sigma(XW_1 + b_1), \quad \hat{y} = \sigma(hW_2 + b_2)" block />
           <div>
             <div className="flex items-baseline justify-between">
-              <label htmlFor="bp-lr" className="font-mono text-[13px] text-[var(--ink-secondary)]">
+              <label htmlFor="bp-lr" className="font-mono text-[15px] text-[var(--ink-secondary)]">
                 learning rate
               </label>
-              <span className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{lr.toFixed(1)}</span>
+              <span className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{lr.toFixed(1)}</span>
             </div>
             <input
               id="bp-lr"
               type="range"
-              min={0.5}
-              max={8}
-              step={0.5}
+              min={problem.lrRange.min}
+              max={problem.lrRange.max}
+              step={problem.lrRange.step}
               value={lr}
               onChange={(e) => handleLrChange(Number(e.target.value))}
               className="mt-2 w-full accent-[var(--accent)]"
@@ -271,15 +308,15 @@ export default function BackpropExplorer() {
           </div>
           <button
             onClick={handleTrainClick}
-            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[13px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
+            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[15px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
           >
             {buttonLabel}
           </button>
           {trajectory ? (
             <>
-              <p className="tabular font-mono text-[12px] text-[var(--ink-muted)]">
-                epoch {Math.min(step, trajectory.snapshots.length - 1) * EPOCHS_PER_SNAPSHOT} / {TOTAL_EPOCHS} · loss{" "}
-                {losses[Math.min(step, losses.length - 1)].toFixed(4)}
+              <p className="tabular font-mono text-[14px] text-[var(--ink-muted)]">
+                epoch {Math.min(step, trajectory.snapshots.length - 1) * (problem.epochs / SNAPSHOTS)} /{" "}
+                {problem.epochs} · loss {losses[Math.min(step, losses.length - 1)].toFixed(4)}
               </p>
               <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%" className="max-w-[460px]">
                 <polyline points={lossPoints} fill="none" stroke="var(--accent)" strokeWidth={2} />
@@ -303,16 +340,16 @@ export default function BackpropExplorer() {
               </svg>
             </>
           ) : (
-            <p className="font-mono text-[12px] text-[var(--ink-muted)]">
-              untrained — random initial weights, MSE {meanSquaredError(untrainedParams).toFixed(4)}
+            <p className="font-mono text-[14px] text-[var(--ink-muted)]">
+              untrained — random initial weights, MSE {meanSquaredError(untrainedParams, problem.data).toFixed(4)}
             </p>
           )}
         </div>
       </div>
 
       <div>
-        <h3 className="text-[15px] font-medium text-[var(--ink-primary)]">Probe the network</h3>
-        <p className="mt-1 max-w-xl text-[13px] text-[var(--ink-secondary)]">
+        <h3 className="text-[17px] font-medium text-[var(--ink-primary)]">Probe the network</h3>
+        <p className="mt-1 max-w-xl text-[15px] text-[var(--ink-secondary)]">
           Drag the inputs and watch activation flow through whatever the network currently looks like — mid-training
           or fully converged. Node fill is the activation value; edge thickness is{" "}
           <span className="font-mono">|weight|</span>.
@@ -329,8 +366,8 @@ export default function BackpropExplorer() {
             ].map((s) => (
               <div key={s.label}>
                 <div className="flex items-baseline justify-between">
-                  <label className="font-mono text-[13px] text-[var(--ink-secondary)]">{s.label}</label>
-                  <span className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{s.value.toFixed(2)}</span>
+                  <label className="font-mono text-[15px] text-[var(--ink-secondary)]">{s.label}</label>
+                  <span className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{s.value.toFixed(2)}</span>
                 </div>
                 <input
                   type="range"

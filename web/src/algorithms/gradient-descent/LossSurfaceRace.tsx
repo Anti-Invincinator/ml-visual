@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Formula } from "@/components/formula";
 import {
   batchStep,
-  loss,
+  LOSS_SURFACES,
   makeRng,
   momentumStep,
   noisyStep,
+  type LossSurface,
   type Vec2,
 } from "./engine";
 
@@ -34,24 +35,34 @@ function fromPx(px: number, py: number): Vec2 {
   };
 }
 
-// Sequential blue ramp: near-zero loss reads light, high loss reads dark/saturated.
+// Sequential blue ramp: low loss reads light, high loss reads dark/saturated.
 const LOW = { r: 0xcd, g: 0xe2, b: 0xfb }; // #cde2fb
 const HIGH = { r: 0x0d, g: 0x36, b: 0x6b }; // #0d366b
 
-function heatmapImageData(): ImageData {
-  const data = new Uint8ClampedArray(SIZE * SIZE * 4);
-  const maxLoss = loss({ x: RANGE, y: RANGE });
+// Min-max normalized (not assumed to bottom out at zero — the local-minimum
+// trap surface dips negative) with a gamma curve so the basin floors stay
+// visually distinguishable instead of crushing to a flat color.
+function heatmapImageData(surface: LossSurface): ImageData {
+  const losses = new Float64Array(SIZE * SIZE);
+  let min = Infinity;
+  let max = -Infinity;
   for (let py = 0; py < SIZE; py++) {
     for (let px = 0; px < SIZE; px++) {
-      const w = fromPx(px, py);
-      const l = loss(w);
-      const t = Math.min(1, Math.sqrt(l / maxLoss));
-      const idx = (py * SIZE + px) * 4;
-      data[idx] = LOW.r + (HIGH.r - LOW.r) * t;
-      data[idx + 1] = LOW.g + (HIGH.g - LOW.g) * t;
-      data[idx + 2] = LOW.b + (HIGH.b - LOW.b) * t;
-      data[idx + 3] = 255;
+      const l = surface.loss(fromPx(px, py));
+      losses[py * SIZE + px] = l;
+      if (l < min) min = l;
+      if (l > max) max = l;
     }
+  }
+  const data = new Uint8ClampedArray(SIZE * SIZE * 4);
+  const span = max - min || 1;
+  for (let i = 0; i < losses.length; i++) {
+    const t = Math.pow((losses[i] - min) / span, 0.6);
+    const idx = i * 4;
+    data[idx] = LOW.r + (HIGH.r - LOW.r) * t;
+    data[idx + 1] = LOW.g + (HIGH.g - LOW.g) * t;
+    data[idx + 2] = LOW.b + (HIGH.b - LOW.b) * t;
+    data[idx + 3] = 255;
   }
   return new ImageData(data, SIZE, SIZE);
 }
@@ -72,11 +83,13 @@ const OPTIMIZERS = [
   },
 ] as const;
 
-function runPaths(start: Vec2, lr: number): Record<string, Vec2[]> {
+function runPaths(start: Vec2, lr: number, surface: LossSurface): Record<string, Vec2[]> {
+  const gradFn = surface.gradient;
+
   const batch: Vec2[] = [start];
   let wB = start;
   for (let i = 0; i < N_STEPS; i++) {
-    wB = batchStep(wB, lr);
+    wB = batchStep(wB, lr, gradFn);
     batch.push(wB);
   }
 
@@ -84,7 +97,7 @@ function runPaths(start: Vec2, lr: number): Record<string, Vec2[]> {
   let wM = start;
   let v: Vec2 = { x: 0, y: 0 };
   for (let i = 0; i < N_STEPS; i++) {
-    const next = momentumStep(wM, v, lr);
+    const next = momentumStep(wM, v, lr, gradFn);
     wM = next.w;
     v = next.v;
     momentum.push(wM);
@@ -94,7 +107,7 @@ function runPaths(start: Vec2, lr: number): Record<string, Vec2[]> {
   let wS = start;
   const rng = makeRng(7);
   for (let i = 0; i < N_STEPS; i++) {
-    wS = noisyStep(wS, lr, rng);
+    wS = noisyStep(wS, lr, rng, gradFn);
     sgd.push(wS);
   }
 
@@ -104,11 +117,22 @@ function runPaths(start: Vec2, lr: number): Record<string, Vec2[]> {
 export default function LossSurfaceRace() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageDataRef = useRef<ImageData | null>(null);
-  const [start, setStart] = useState<Vec2>({ x: 3.2, y: 3.2 });
-  const [lr, setLr] = useState(0.2);
+  const [surfaceKey, setSurfaceKey] = useState<string>(LOSS_SURFACES[0].key);
+  const surface = LOSS_SURFACES.find((s) => s.key === surfaceKey)!;
+
+  const [start, setStart] = useState<Vec2>(surface.defaultStart);
+  const [lr, setLr] = useState(surface.defaultLr);
   const [step, setStep] = useState(0);
 
-  const paths = useMemo(() => runPaths(start, lr), [start, lr]);
+  function selectSurface(key: string) {
+    const next = LOSS_SURFACES.find((s) => s.key === key)!;
+    setSurfaceKey(key);
+    setStart(next.defaultStart);
+    setLr(next.defaultLr);
+    setStep(0);
+  }
+
+  const paths = useMemo(() => runPaths(start, lr, surface), [start, lr, surface]);
 
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -140,12 +164,6 @@ export default function LossSurfaceRace() {
       ctx.fill();
     }
 
-    const originPx = toPx({ x: 0, y: 0 });
-    ctx.beginPath();
-    ctx.fillStyle = "#ffffff";
-    ctx.arc(originPx.x, originPx.y, 3, 0, Math.PI * 2);
-    ctx.fill();
-
     const startPx = toPx(start);
     ctx.beginPath();
     ctx.fillStyle = "#0d0d0d";
@@ -157,8 +175,10 @@ export default function LossSurfaceRace() {
   }, [paths, step, start]);
 
   useEffect(() => {
-    imageDataRef.current = heatmapImageData();
-  }, []);
+    imageDataRef.current = heatmapImageData(surface);
+    redraw();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [surface]);
 
   useEffect(() => {
     redraw();
@@ -187,7 +207,9 @@ export default function LossSurfaceRace() {
   const chartWidth = 460;
   const chartHeight = 150;
   const chartMargin = { left: 40, right: 12, top: 10, bottom: 22 };
-  const logLosses = OPTIMIZERS.map((opt) => paths[opt.key].map((w) => Math.log10(Math.max(loss(w), 1e-6))));
+  const rawLosses = OPTIMIZERS.map((opt) => paths[opt.key].map((w) => surface.loss(w)));
+  const lossFloor = Math.min(0, ...rawLosses.flat());
+  const logLosses = rawLosses.map((series) => series.map((l) => Math.log10(l - lossFloor + 1e-3)));
   const allLogs = logLosses.flat();
   const maxLog = Math.max(...allLogs);
   const minLog = Math.min(...allLogs);
@@ -202,6 +224,23 @@ export default function LossSurfaceRace() {
 
   return (
     <div className="flex flex-col gap-8">
+      <div className="flex flex-wrap gap-2">
+        {LOSS_SURFACES.map((s) => (
+          <button
+            key={s.key}
+            onClick={() => selectSurface(s.key)}
+            className={`border px-3 py-1.5 font-mono text-[14px] transition-colors ${
+              surfaceKey === s.key
+                ? "border-[var(--accent)] text-[var(--accent)]"
+                : "border-[var(--hairline)] text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <p className="max-w-2xl text-[15px] text-[var(--ink-secondary)]">{surface.blurb}</p>
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[440px_1fr]">
         <canvas
           ref={canvasRef}
@@ -211,26 +250,26 @@ export default function LossSurfaceRace() {
           className="cursor-crosshair touch-none select-none"
         />
         <div className="flex flex-col justify-center gap-5">
-          <p className="text-[13px] text-[var(--ink-secondary)]">
+          <p className="text-[15px] text-[var(--ink-secondary)]">
             Click anywhere on the surface to drop a shared starting point — all three optimizers race from there,
             live, computed from scratch on every step.
           </p>
 
-          <Formula tex="L(w_1, w_2) = \tfrac{1}{2}\left(a\,w_1^2 + b\,w_2^2\right)" block />
+          <Formula tex={surface.tex} block />
 
           <div>
             <div className="flex items-baseline justify-between">
-              <label htmlFor="lr-slider" className="font-mono text-[13px] text-[var(--ink-secondary)]">
+              <label htmlFor="lr-slider" className="font-mono text-[15px] text-[var(--ink-secondary)]">
                 learning rate
               </label>
-              <span className="tabular font-mono text-[15px] text-[var(--ink-primary)]">{lr.toFixed(2)}</span>
+              <span className="tabular font-mono text-[17px] text-[var(--ink-primary)]">{lr.toFixed(2)}</span>
             </div>
             <input
               id="lr-slider"
               type="range"
-              min={0.02}
-              max={0.24}
-              step={0.01}
+              min={surface.lrRange.min}
+              max={surface.lrRange.max}
+              step={surface.lrRange.step}
               value={lr}
               onChange={(e) => {
                 setLr(Number(e.target.value));
@@ -242,7 +281,7 @@ export default function LossSurfaceRace() {
 
           <button
             onClick={replay}
-            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[13px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
+            className="w-fit border border-[var(--hairline)] px-4 py-2 font-mono text-[15px] text-[var(--ink-primary)] transition-colors hover:bg-[var(--surface)]"
           >
             {step < N_STEPS ? "running…" : "replay"}
           </button>
@@ -258,7 +297,7 @@ export default function LossSurfaceRace() {
                     i !== OPTIMIZERS.length - 1 ? "border-b border-[var(--hairline)]" : ""
                   }`}
                 >
-                  <dt className="flex flex-col gap-1 text-[13px] text-[var(--ink-secondary)]">
+                  <dt className="flex flex-col gap-1 text-[15px] text-[var(--ink-secondary)]">
                     <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full" style={{ background: opt.color }} />
                       {opt.label}
@@ -267,8 +306,8 @@ export default function LossSurfaceRace() {
                       <Formula tex={opt.tex} />
                     </span>
                   </dt>
-                  <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">
-                    {loss(current).toFixed(3)}
+                  <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">
+                    {surface.loss(current).toFixed(3)}
                   </dd>
                 </div>
               );
@@ -278,7 +317,7 @@ export default function LossSurfaceRace() {
       </div>
 
       <div>
-        <p className="mb-2 font-mono text-xs text-[var(--ink-muted)]">loss vs. iteration (log scale)</p>
+        <p className="mb-2 font-mono text-sm text-[var(--ink-muted)]">loss vs. iteration (log scale)</p>
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%" className="max-w-[460px]">
           {OPTIMIZERS.map((opt, oi) => {
             const points = logLosses[oi]

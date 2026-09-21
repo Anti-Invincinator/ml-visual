@@ -186,7 +186,7 @@ export default function PointComparison() {
       </svg>
 
       <div className="flex flex-col justify-center gap-4">
-        <p className="text-[13px] text-[var(--ink-secondary)]">
+        <p className="text-[15px] text-[var(--ink-secondary)]">
           Drag points <span className="font-mono text-[var(--ink-primary)]">A</span> and{" "}
           <span className="font-mono text-[var(--ink-primary)]">B</span>. Every metric below is computed live, from
           scratch, on every frame.
@@ -199,14 +199,14 @@ export default function PointComparison() {
                 i !== readouts.length - 1 ? "border-b border-[var(--hairline)]" : ""
               }`}
             >
-              <dt className="flex items-center gap-2 text-[13px] text-[var(--ink-secondary)]">
+              <dt className="flex items-center gap-2 text-[15px] text-[var(--ink-secondary)]">
                 <span className="h-2 w-2 rounded-full" style={{ background: r.color }} />
                 {r.label}
                 <span className="text-[var(--ink-muted)]">
                   <Formula tex={r.tex} />
                 </span>
               </dt>
-              <dd className="tabular font-mono text-[15px] text-[var(--ink-primary)]">
+              <dd className="tabular font-mono text-[17px] text-[var(--ink-primary)]">
                 {r.value.toFixed(2)}
               </dd>
             </div>
